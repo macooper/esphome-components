@@ -1,4 +1,4 @@
-# ESPHime Components
+# ESPHome Components
 Custom components for [ESPHome](https://esphome.io/)
 
 ## Nanoview Sender

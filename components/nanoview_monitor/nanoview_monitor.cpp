@@ -50,7 +50,7 @@ namespace esphome {
         switch (this->messageType) {
           case NANOVIEW_LIVE_POWER: {
             std::size_t required_size = sizeof(nanoViewMessage.live_power);
-            ESP_LOGD(TAG, "NANOVIEW_LIVE_POWER looking for %d bytes", required_size);
+            ESP_LOGV(TAG, "NANOVIEW_LIVE_POWER looking for %d bytes", required_size);
             messageStatus = this->readPacket(&nanoViewMessage.live_power, required_size, true);
             if (BUFFER_VALID == messageStatus) {
               ESP_LOGD(TAG, "Recieved NANOVIEW_LIVE_POWER Packet");
@@ -61,7 +61,7 @@ namespace esphome {
           break;
           case NANOVIEW_ACCUMULATED_ENERGY: {
             std::size_t required_size = sizeof(nanoViewMessage.accumulated_energy);
-            ESP_LOGD(TAG, "NANOVIEW_ACCUMULATED_ENERGY looking for %d bytes", required_size);
+            ESP_LOGV(TAG, "NANOVIEW_ACCUMULATED_ENERGY looking for %d bytes", required_size);
             messageStatus = this->readPacket(&nanoViewMessage.accumulated_energy, required_size, true);
             if (BUFFER_VALID == messageStatus) {
               ESP_LOGD(TAG, "Recieved NANOVIEW_ACCUMULATED_ENERGY Packet");
@@ -72,7 +72,7 @@ namespace esphome {
           break;
           case NANOVIEW_FIRMWARE_VERSION: {
             std::size_t required_size = sizeof(nanoViewMessage.firmware_version);
-            ESP_LOGD(TAG, "NANOVIEW_FIRMWARE_VERSION looking for %d bytes", required_size);
+            ESP_LOGV(TAG, "NANOVIEW_FIRMWARE_VERSION looking for %d bytes", required_size);
             messageStatus = this->readPacket(&nanoViewMessage.firmware_version, required_size, true);
             if (BUFFER_VALID == messageStatus) {
               ESP_LOGD(TAG, "Recieved NANOVIEW_FIRMWARE_VERSION Packet");
@@ -152,11 +152,11 @@ namespace esphome {
       ReadBufferState result = BUFFER_EMPTY;
       uint8_t *localBuffer = (uint8_t *)dataBuffer;
       int availableBytes = this->available_();
-      ESP_LOGD(TAG, "NanoviewMonitor::readPacket Looking For %d Bytes", length);
+      ESP_LOGV(TAG, "NanoviewMonitor::readPacket Looking For %d Bytes", length);
       if (availableBytes >= length) {
         if (this->read_array_(localBuffer, length)) {
           result = BUFFER_VALID;
-          ESP_LOGD(TAG, "NanoviewMonitor::readPacket read %d bytes, %d remaining", length, this->available_());
+          ESP_LOGV(TAG, "NanoviewMonitor::readPacket read %d bytes, %d remaining", length, this->available_());
           if (verify) {
             /*
               Checksum Calculation pseudo code

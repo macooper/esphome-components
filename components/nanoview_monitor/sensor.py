@@ -77,7 +77,7 @@ CONFIG_SCHEMA = cv.ENTITY_BASE_SCHEMA.extend(cv.MQTT_COMPONENT_SCHEMA).extend(ua
         sensor.sensor_schema(
             unit_of_measurement=UNIT_WATT,
             icon="mdi:home-assistant",
-            accuracy_decimals=1,
+            accuracy_decimals=0,
             device_class=DEVICE_CLASS_POWER,
             state_class=STATE_CLASS_MEASUREMENT, # STATE_CLASS_TOTAL_INCREASING, STATE_CLASS_NONE, STATE_CLASS_MEASUREMENT
             #last_reset=LAST_RESET_TYPE_NEVER,

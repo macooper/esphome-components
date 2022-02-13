@@ -17,7 +17,7 @@ sensor:
   - platform: nanoview_monitor
     #test_mode: 'true'
     name: Electricity Monitor
-    used_slots: 13 # From 1-16 for the number of sensors that are used.
+    used_slots: 12 # From 1-16 for the number of sensors that are used.
     update_interval: 3 # how often the value is sent to the frontend. Minimum is 1, max is 86,400 (24 hours)
     voltage:
       name: "Mains Voltage" # Add a name for the entity displaying the mains voltage.
@@ -35,7 +35,7 @@ sensor:
       - name: "Kitchen Fridges Power"
       - name: "Cottage Power"
       - name: "Lounge Sockets Power"
-      - name: "Security Systems Power"
+      # - name: "Unused"
       # - name: "Unused"
       # - name: "Unused"
       # - name: "Unused"
@@ -52,7 +52,7 @@ sensor:
       - name: "Kitchen Fridges Energy"
       - name: "Cottage Energy"
       - name: "Lounge Sockets Energy"
-      - name: "Security Systems Energy"
+      # - name: "Unused"
       # - name: "Unused"
       # - name: "Unused"
       # - name: "Unused"

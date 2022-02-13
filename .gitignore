@@ -1,3 +1,8 @@
+# Private Nanoview Config
+live_nanoview.yaml
+secrets.yaml
+__pycache__/
+
 # Prerequisites
 *.d
 

@@ -42,87 +42,80 @@ namespace esphome {
       if (this->emulate_uart_) this->nanoview_emulator_->loop();
       int availableBytes = 0;
 
-      try {
-        availableBytes = this->available_();
-        ReadBufferState messageStatus = BUFFER_EMPTY;
-        //delay(300);
-        //availableBytes = 0;
-        if (availableBytes > 0) {
-          switch (this->messageType) {
-            case NANOVIEW_LIVE_POWER: {
-              std::size_t required_size = sizeof(nanoViewMessage.live_power);
-              ESP_LOGD(TAG, "NANOVIEW_LIVE_POWER looking for %d bytes", required_size);
-              messageStatus = this->readPacket(&nanoViewMessage.live_power, required_size, true);
-              if (BUFFER_VALID == messageStatus) {
-                ESP_LOGD(TAG, "Recieved NANOVIEW_LIVE_POWER Packet");
-                nanoViewMessage.livePowerValid = true;
-                this->messageType = NANOVIEW_UNSET;
-              }
+      availableBytes = this->available_();
+      ReadBufferState messageStatus = BUFFER_EMPTY;
+      //delay(300);
+      //availableBytes = 0;
+      if (availableBytes > 0) {
+        switch (this->messageType) {
+          case NANOVIEW_LIVE_POWER: {
+            std::size_t required_size = sizeof(nanoViewMessage.live_power);
+            ESP_LOGD(TAG, "NANOVIEW_LIVE_POWER looking for %d bytes", required_size);
+            messageStatus = this->readPacket(&nanoViewMessage.live_power, required_size, true);
+            if (BUFFER_VALID == messageStatus) {
+              ESP_LOGD(TAG, "Recieved NANOVIEW_LIVE_POWER Packet");
+              nanoViewMessage.livePowerValid = true;
+              this->messageType = NANOVIEW_UNSET;
             }
-            break;
-            case NANOVIEW_ACCUMULATED_ENERGY: {
-              std::size_t required_size = sizeof(nanoViewMessage.accumulated_energy);
-              ESP_LOGD(TAG, "NANOVIEW_ACCUMULATED_ENERGY looking for %d bytes", required_size);
-              messageStatus = this->readPacket(&nanoViewMessage.accumulated_energy, required_size, true);
-              if (BUFFER_VALID == messageStatus) {
-                ESP_LOGD(TAG, "Recieved NANOVIEW_ACCUMULATED_ENERGY Packet");
-                nanoViewMessage.AccumulatedEnergyValid = true;
-                this->messageType = NANOVIEW_UNSET;
-              }
-            }
-            break;
-            case NANOVIEW_FIRMWARE_VERSION: {
-              std::size_t required_size = sizeof(nanoViewMessage.firmware_version);
-              ESP_LOGD(TAG, "NANOVIEW_FIRMWARE_VERSION looking for %d bytes", required_size);
-              messageStatus = this->readPacket(&nanoViewMessage.firmware_version, required_size, true);
-              if (BUFFER_VALID == messageStatus) {
-                ESP_LOGD(TAG, "Recieved NANOVIEW_FIRMWARE_VERSION Packet");
-                this->messageType = NANOVIEW_UNSET;
-                nanoViewMessage.firmwareValid = true;
-              }
-            }
-            break;
-            case NANOVIEW_MESSAGE_START:
-              ESP_LOGD(TAG, "Processing NANOVIEW_MESSAGE_START");
-            default:
-              ESP_LOGD(TAG, "Processing default");
-              this->messageType = this->readMessageStart();
-            break;
-          } // switch 
-          if (BUFFER_CORRUPT == messageStatus) {
-            ESP_LOGD(TAG, "Clearing Corrupt Buffer");
-            this->messageType = NANOVIEW_UNSET;
           }
-          
-          if (nanoViewMessage.AccumulatedEnergyValid && nanoViewMessage.livePowerValid) {
-            /*
-              update_interval from nanoview.yaml.
-              Will only send update on update_interval successful reading.
-              The nanoview hardware sends a full set of readings once each second.
-              This is used to set how many seconds pass between readings.
-              Note the data will still be read to remove it from the seril buffers, 
-              but will then be overwritten if not sent to the home assistant.
-            */
-            ESP_LOGD(TAG, "updateCount %d, updateInterval %d", this->updateCount, this->updateInterval);
-            if (++(this->updateCount) >= this->updateInterval) {
-              this->logMessageAsHex(&nanoViewMessage);
-              // We have both important packets for this second, so lets publish them to MQTT
-              publishData(&nanoViewMessage); // Initial attempt.  Only oublished the value, not the configuration
-              this->updateCount = 0;
-              logHeapSpace();
+          break;
+          case NANOVIEW_ACCUMULATED_ENERGY: {
+            std::size_t required_size = sizeof(nanoViewMessage.accumulated_energy);
+            ESP_LOGD(TAG, "NANOVIEW_ACCUMULATED_ENERGY looking for %d bytes", required_size);
+            messageStatus = this->readPacket(&nanoViewMessage.accumulated_energy, required_size, true);
+            if (BUFFER_VALID == messageStatus) {
+              ESP_LOGD(TAG, "Recieved NANOVIEW_ACCUMULATED_ENERGY Packet");
+              nanoViewMessage.AccumulatedEnergyValid = true;
+              this->messageType = NANOVIEW_UNSET;
             }
-            // Reset ready for next reading.
-            nanoViewMessage.livePowerValid = false;
-            nanoViewMessage.AccumulatedEnergyValid = false;
-            nanoViewMessage.firmwareValid = false;
-            //ESP_LOGI(TAG, "NanoviewMonitor::loop %d bytes available", availableBytes);
           }
+          break;
+          case NANOVIEW_FIRMWARE_VERSION: {
+            std::size_t required_size = sizeof(nanoViewMessage.firmware_version);
+            ESP_LOGD(TAG, "NANOVIEW_FIRMWARE_VERSION looking for %d bytes", required_size);
+            messageStatus = this->readPacket(&nanoViewMessage.firmware_version, required_size, true);
+            if (BUFFER_VALID == messageStatus) {
+              ESP_LOGD(TAG, "Recieved NANOVIEW_FIRMWARE_VERSION Packet");
+              this->messageType = NANOVIEW_UNSET;
+              nanoViewMessage.firmwareValid = true;
+            }
+          }
+          break;
+          case NANOVIEW_MESSAGE_START:
+            ESP_LOGD(TAG, "Processing NANOVIEW_MESSAGE_START");
+          default:
+            ESP_LOGD(TAG, "Processing default");
+            this->messageType = this->readMessageStart();
+          break;
+        } // switch 
+        if (BUFFER_CORRUPT == messageStatus) {
+          ESP_LOGD(TAG, "Clearing Corrupt Buffer");
+          this->messageType = NANOVIEW_UNSET;
         }
-      }
-      catch (const std::exception& e) {
-        //delay(300);
-        ESP_LOGE(TAG, "An exception occured while Checking for available bytes\n");
-        ESP_LOGE(TAG, "%s", e.what());
+          
+        if (nanoViewMessage.AccumulatedEnergyValid && nanoViewMessage.livePowerValid) {
+          /*
+            update_interval from nanoview.yaml.
+            Will only send update on update_interval successful reading.
+            The nanoview hardware sends a full set of readings once each second.
+            This is used to set how many seconds pass between readings.
+            Note the data will still be read to remove it from the seril buffers, 
+            but will then be overwritten if not sent to the home assistant.
+          */
+          ESP_LOGD(TAG, "updateCount %d, updateInterval %d", this->updateCount, this->updateInterval);
+          if (++(this->updateCount) >= this->updateInterval) {
+            this->logMessageAsHex(&nanoViewMessage);
+            // We have both important packets for this second, so lets publish them to MQTT
+            publishData(&nanoViewMessage); // Initial attempt.  Only oublished the value, not the configuration
+            this->updateCount = 0;
+            logHeapSpace();
+          }
+          // Reset ready for next reading.
+          nanoViewMessage.livePowerValid = false;
+          nanoViewMessage.AccumulatedEnergyValid = false;
+          nanoViewMessage.firmwareValid = false;
+          //ESP_LOGI(TAG, "NanoviewMonitor::loop %d bytes available", availableBytes);
+        }
       }
     }
 
